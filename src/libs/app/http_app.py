@@ -6,19 +6,23 @@ from tornado.ioloop import IOLoop
 
 from libs.loger import aloger
 
-from libs.app.interface import IWebsocketApp
+
 
 
 class HttpApp:
-    def __init__(self,port:int,websocket_app:IWebsocketApp):
+    def __init__(self,port:int):
         self.port = port
         self.routes = []
-        self.websocket_app = websocket_app
 
-    def add_route(self,path:str):
+
+    def add_route(self,path:str,handler:tornado.web.RequestHandler = None):
         def rg(handler:tornado.web.RequestHandler):
             self.routes.append((path,handler))
-        return rg
+
+        if handler is None:
+            return rg
+        else:
+            self.routes.append((path,handler))
     def run(self):
 
         app = tornado.web.Application(self.routes)

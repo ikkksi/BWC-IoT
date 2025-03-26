@@ -1,6 +1,9 @@
 import json
 import asyncio
 
+import tornado
+import tornado.websocket
+
 import libs.config as config
 from libs.loger import aloger
 from libs.app.const import Out
@@ -101,3 +104,76 @@ class WebsocketApp(IWebsocketApp):
         aloger.info(f"{Out.SERVER_RUNNING.value} ws://{self.address}:{self.port}")
         async with websockets.serve(self._handler, self.address, self.port):
             await asyncio.Future()
+
+    def get_serve(self):
+        return websockets.serve(self._handler, self.address, self.port)
+
+
+
+
+class WebSocketHandler(tornado.websocket.WebSocketHandler):
+    connected_users = set()
+
+    def check_origin(self, origin):
+        """ 允许跨域 WebSocket 连接 """
+        return True
+
+    def open(self):
+        """ 处理 WebSocket 连接 """
+        auth_key = self.request.headers.get("X-Auth-Key")
+        if auth_key != config.VALID_KEY:
+            self.write_message(json.dumps({
+                "sender": "server",
+                "type": "notice",
+                "content": "wrong-key",
+                "time": "2024-8-5-17-17",
+            }))
+            self.close()
+            aloger.info(f"{self.request.remote_ip} {Out.FAILURE_FOR_WRONG_KEY.value}")
+            return
+
+        # 认证成功，添加到连接用户列表
+        WebSocketHandler.connected_users.add(self)
+        self.write_message(json.dumps({
+            "sender": "server",
+            "type": "notice",
+            "content": "right-key",
+            "time": "2024-8-5-17-17",
+        }))
+        aloger.info(f"{self.request.remote_ip} {Out.SUCCESS.value}")
+
+    def on_message(self, message):
+        """ 处理客户端消息并广播 """
+        try:
+            data = json.loads(message)
+            aloger.info(message)
+
+            if data.get("type") == "message":
+                self.broadcast(message)
+            else:
+                self.write_message(json.dumps({
+                    "sender": "server",
+                    "type": "notice",
+                    "content": "illegal-data",
+                    "time": "2024-8-5-17-17",
+                }))
+        except json.JSONDecodeError:
+            self.write_message(json.dumps({
+                "sender": "server",
+                "type": "notice",
+                "content": "illegal-data",
+                "time": "2024-8-5-17-17",
+            }))
+            aloger.error(Out.ILLEGAL_DATA_PACK.value)
+
+    def on_close(self):
+        """ 处理 WebSocket 断开 """
+        WebSocketHandler.connected_users.discard(self)
+        aloger.error(Out.CONNECT_CLOSE.value)
+
+    @classmethod
+    def broadcast(cls, message:str):
+        """ 向所有 WebSocket 客户端广播消息 """
+        for user in cls.connected_users:
+            data = {'sender': 'server', 'type': 'notice', 'content':message, 'time': '2024-8-5-17-17'}
+            user.write_message(json.dumps(data))

@@ -1,9 +1,9 @@
-import asyncio
-import tornado.ioloop
-from tornado.platform.asyncio import AsyncIOMainLoop
-import tornado.web
+from distutils.command.config import config
 
-from libs.app import WebsocketApp, HttpApp
+import tornado
+from libs.loger import aloger
+
+from libs.app import WebSocketHandler, HttpApp,Out
 from libs import config
 
 # 打印 Banner 信息
@@ -19,29 +19,29 @@ b = r"""
 print(b)
 
 # 实例化 WebSocket 与 HTTP 服务
-ws_app = WebsocketApp(address=config.ADDRESS, port=config.WS_PORT)
-http_app = HttpApp(8888, websocket_app=ws_app)
+app = HttpApp(port=config.WS_PORT)
 
-# 定义 HTTP 请求处理器及 CORS 设置
-class CORSetting(tornado.web.RequestHandler):
-    def set_default_headers(self):
-        self.set_header("Access-Control-Allow-Origin", "*")
-        self.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-        self.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+@app.add_route('/')
+class HttpHandler(tornado.web.RequestHandler):
+    """ HTTP 服务器端点 """
+    def get(self):
+        self.write("Hello, Tornado HTTP Server!")
 
-    def options(self):
-        self.set_status(204)
-        self.finish()
 
-@http_app.add_route('/')
-class HelloHandler(CORSetting):
-    async def get(self):
-        self.write('Hello, World!')
 
-async def main():
-    await asyncio.gather(
-        ws_app.run(),
-        asyncio.to_thread(http_app.run)
-    )
+@app.add_route('/bro')
+class HttpHandler(tornado.web.RequestHandler):
+    """ HTTP 服务器端点 """
+    def get(self):
+        WebSocketHandler.broadcast("hello")
+        self.write("Hello, Tornado HTTP Server!")
+
+app.add_route('/ws', WebSocketHandler)
+
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+
+    app.run()
+    aloger.info(f"WebSocket服务器正在运行 ws://localhost:{config.WS_PORT}")
+    tornado.ioloop.IOLoop.current().start()
