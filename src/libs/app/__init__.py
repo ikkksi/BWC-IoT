@@ -4,10 +4,11 @@ import asyncio
 import libs.config as config
 from libs.loger import aloger
 from libs.app.const import Out
-
+from libs.app.http_app import HttpApp
+from libs.app.interface import IWebsocketApp
 import websockets
 
-class App:
+class WebsocketApp(IWebsocketApp):
     WK = {
         "sender": "server",
         "type": "notice",
