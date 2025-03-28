@@ -1,6 +1,6 @@
 
 import tornado.web
-from tornado.ioloop import IOLoop
+from libs.app.interface import HttpDocsCORS
 
 
 
@@ -15,8 +15,8 @@ class HttpApp:
         self.routes = []
 
 
-    def add_route(self,path:str,handler:tornado.web.RequestHandler = None):
-        def rg(handler:tornado.web.RequestHandler):
+    def add_route(self,path:str,handler:HttpDocsCORS = None):
+        def rg(handler:HttpDocsCORS):
             self.routes.append((path,handler))
 
         if handler is None:
@@ -30,6 +30,10 @@ class HttpApp:
         app.listen(self.port)
 
         aloger.info(f"Tornado HTTP Server 已启动 http://127.0.0.1:{self.port}")
+        for path,handler in self.routes:
+            aloger.info(f"route:{path} | Description:{handler.get_description()}")
+
+
 
 
 

@@ -9,7 +9,7 @@ import libs.config as config
 from libs.loger import aloger
 from libs.app.const import Out
 from libs.app.http_app import HttpApp
-from libs.app.interface import IWebsocketApp
+from libs.app.interface import IWebsocketApp,IDocs
 import websockets
 
 class WebsocketApp(IWebsocketApp):
@@ -112,7 +112,7 @@ class WebsocketApp(IWebsocketApp):
 
 
 
-class WebSocketHandler(tornado.websocket.WebSocketHandler):
+class WebSocketHandler(tornado.websocket.WebSocketHandler,IDocs):
     connected_users = set()
 
     def check_origin(self, origin):
@@ -183,4 +183,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                 data = {'sender': f'{sender_name}', 'type': f'{type}', 'content':message, 'time': '2024-8-5-17-17'}
                 user.write_message(json.dumps(data))
 
-
+    @staticmethod
+    def get_description() ->str:
+        return "websocket路由"

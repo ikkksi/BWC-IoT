@@ -1,11 +1,11 @@
-
+import json
 
 import tornado
 from libs.loger import aloger
 
-from libs.app import WebSocketHandler, HttpApp,Out
+from libs.app import WebSocketHandler, HttpApp
 from libs import config
-
+from libs.app.interface import HttpDocsCORS
 # 打印 Banner 信息
 b = r"""
  ____     __      __  ____            ______          ______
@@ -21,35 +21,55 @@ print(b)
 # 实例化 WebSocket 与 HTTP 服务
 app = HttpApp(port=config.WS_PORT)
 
-class BroadcastHandler(tornado.web.RequestHandler):
-    def set_default_headers(self):
-        """ 允许跨域访问 """
-        self.set_header("Access-Control-Allow-Origin", "*")  # 允许所有域
-        self.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.set_header("Access-Control-Allow-Headers", "Content-Type")
 
-    def options(self):
-        """ 处理 preflight 预检请求 """
-        self.set_status(204)  # No Content
-        self.finish()
 @app.add_route('/test')
-class HttpHandler(BroadcastHandler):
+class HttpHandler(HttpDocsCORS):
     """ HTTP 服务器端点 """
     def get(self):
         import random
         self.write(f"帅哥黄汉宏{random.randint(0, 9999)}")
+    @staticmethod
+    def get_description() ->str:
+        return "同步测试接口"
 
+@app.add_route('/test/like_game')
+class HttpHandler(HttpDocsCORS):
+    """ HTTP 服务器端点 """
+    async def post(self):
+        try:
+            # 异步读取 JSON 请求体
+            data:dict = json.loads(self.request.body.decode('utf-8'))
 
+            c = f"{ data.get('name') }啥也不是"
+
+            if data["game"] == "无畏契约":
+
+                c = f"""{data["name"]}是瓦学弟"""
+
+            elif data["game"] == "csgo":
+
+                c = f"""{data["name"]}是go学长"""
+
+            self.write({"name":data["name"],"content":c})
+        except json.JSONDecodeError:
+            self.set_status(400)
+            self.write({"status": "error", "message": "Invalid JSON"})
+
+    @staticmethod
+    def get_description() ->str:
+        return "异步post测试接口"
 
 
 
 @app.add_route('/bro')
-class HttpHandler(BroadcastHandler):
+class HttpHandler(HttpDocsCORS):
     """ HTTP 服务器端点 """
     async def get(self):
         WebSocketHandler.broadcast("hello")
         self.write("广播成功")
-
+    @staticmethod
+    def get_description()->str:
+        return "异步测试接口，广播测试接口"
 app.add_route('/', WebSocketHandler)
 
 
