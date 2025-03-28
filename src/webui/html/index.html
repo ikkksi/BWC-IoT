@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>固定侧边栏网页</title>
+    <style>
+        @import url("webui/css/style.css");
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <ul>
+            <li onclick="changeContent(0)">在线设备</li>
+            <li onclick="changeContent(1)">广播测试</li>
+            <li onclick="changeContent(2)">接口测试</li>
+            <li onclick="changeContent(3)">日志查看</li>
+            <li onclick="changeContent(4)">关于我们</li>
+        </ul>
+    </div>
+    <div class="content show" id="content">
+        <h1>在线设备</h1>
+        <p>欢迎来到我们的首页！</p>
+    </div>
+    <script type="text/javascript" src="webui/js/script.js">
+
+    </script>
+</body>
+</html>

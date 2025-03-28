@@ -11,7 +11,7 @@ from libs.app.const import Out
 from libs.app.http_app import HttpApp
 from libs.app.interface import IWebsocketApp,IDocs
 import websockets
-
+import random
 class WebsocketApp(IWebsocketApp):
     WK = {
         "sender": "server",
@@ -115,6 +115,8 @@ class WebsocketApp(IWebsocketApp):
 class WebSocketHandler(tornado.websocket.WebSocketHandler,IDocs):
     connected_users = set()
 
+    user_device_name_map = dict()
+
     def check_origin(self, origin):
         """ 允许跨域 WebSocket 连接 """
         return True
@@ -123,6 +125,12 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler,IDocs):
         """ 处理 WebSocket 连接 """
         aloger.debug(self.request.remote_ip)
         auth_key = self.request.headers.get("X-Auth-Key")
+        device_name = self.request.headers.get("Device-Name")
+        if device_name == None:
+
+            device_name = f"未知设备{random.randint(0, 10000)}"
+
+
         if auth_key != config.VALID_KEY:
             self.write_message(json.dumps({
                 "sender": "server",
@@ -136,6 +144,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler,IDocs):
 
         # 认证成功，添加到连接用户列表
         WebSocketHandler.connected_users.add(self)
+        WebSocketHandler.user_device_name_map[device_name] = self
+
         self.write_message(json.dumps({
             "sender": "server",
             "type": "notice",
