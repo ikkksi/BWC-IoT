@@ -1,4 +1,4 @@
-from distutils.command.config import config
+
 
 import tornado
 from libs.loger import aloger
@@ -21,22 +21,36 @@ print(b)
 # 实例化 WebSocket 与 HTTP 服务
 app = HttpApp(port=config.WS_PORT)
 
-@app.add_route('/')
-class HttpHandler(tornado.web.RequestHandler):
+class BroadcastHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        """ 允许跨域访问 """
+        self.set_header("Access-Control-Allow-Origin", "*")  # 允许所有域
+        self.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.set_header("Access-Control-Allow-Headers", "Content-Type")
+
+    def options(self):
+        """ 处理 preflight 预检请求 """
+        self.set_status(204)  # No Content
+        self.finish()
+@app.add_route('/test')
+class HttpHandler(BroadcastHandler):
     """ HTTP 服务器端点 """
     def get(self):
-        self.write("Hello, Tornado HTTP Server!")
+        import random
+        self.write(f"帅哥黄汉宏{random.randint(0, 9999)}")
+
+
 
 
 
 @app.add_route('/bro')
-class HttpHandler(tornado.web.RequestHandler):
+class HttpHandler(BroadcastHandler):
     """ HTTP 服务器端点 """
-    def get(self):
+    async def get(self):
         WebSocketHandler.broadcast("hello")
-        self.write("Hello, Tornado HTTP Server!")
+        self.write("广播成功")
 
-app.add_route('/ws', WebSocketHandler)
+app.add_route('/', WebSocketHandler)
 
 
 

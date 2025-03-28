@@ -4,6 +4,7 @@ import asyncio
 import tornado
 import tornado.websocket
 
+
 import libs.config as config
 from libs.loger import aloger
 from libs.app.const import Out
@@ -120,6 +121,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         """ 处理 WebSocket 连接 """
+        aloger.debug(self.request.remote_ip)
         auth_key = self.request.headers.get("X-Auth-Key")
         if auth_key != config.VALID_KEY:
             self.write_message(json.dumps({
@@ -144,12 +146,13 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
         """ 处理客户端消息并广播 """
+        aloger.info(f"{message}")
         try:
             data = json.loads(message)
-            aloger.info(message)
+
 
             if data.get("type") == "message":
-                self.broadcast(message)
+                self.broadcast(data['content'],sender=self,sender_name=data['sender'])
             else:
                 self.write_message(json.dumps({
                     "sender": "server",
@@ -172,8 +175,12 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         aloger.error(Out.CONNECT_CLOSE.value)
 
     @classmethod
-    def broadcast(cls, message:str):
+    def broadcast(cls, message:str,sender:tornado.websocket.WebSocketHandler = None,sender_name:str = "server",type:str = "message"):
         """ 向所有 WebSocket 客户端广播消息 """
         for user in cls.connected_users:
-            data = {'sender': 'server', 'type': 'notice', 'content':message, 'time': '2024-8-5-17-17'}
-            user.write_message(json.dumps(data))
+            if user != sender:
+
+                data = {'sender': f'{sender_name}', 'type': f'{type}', 'content':message, 'time': '2024-8-5-17-17'}
+                user.write_message(json.dumps(data))
+
+
