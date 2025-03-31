@@ -1,12 +1,16 @@
 import json
 import os
 
+
 import tornado
 from libs.loger import aloger
 
 from libs.app import WebSocketHandler, HttpApp
 from libs import config
 from libs.app.interface import HttpDocsCORS
+
+
+import psutil
 
 EXT_TO_MIME = {
     ".js": "application/javascript",
@@ -46,42 +50,60 @@ app = HttpApp(port=config.WS_PORT)
 
 
 
-@app.add_route('/test')
+
+@app.add_route('/get_cpu_info')
 class HttpHandler(HttpDocsCORS):
     """ HTTP 服务器端点 """
-    def get(self):
-        import random
-        self.write(f"帅哥黄汉宏{random.randint(0, 9999)}")
-    @staticmethod
-    def get_description() ->str:
-        return "同步测试接口"
+    async def get(self):
+        cpu_percent = psutil.cpu_percent()  # 每1秒采样一次CPU使用率
+        cpu_count = psutil.cpu_count(logical=False)  # 获取物理CPU核心数
 
-@app.add_route('/test/like_game')
+
+        self.write({"percent": cpu_percent, "cpu_count":cpu_count})
+    @staticmethod
+    def get_description()->str:
+        return "获取cpu占用情况"
+
+@app.add_route('/get_memory_info')
 class HttpHandler(HttpDocsCORS):
     """ HTTP 服务器端点 """
-    async def post(self):
-        try:
-            # 异步读取 JSON 请求体
-            data:dict = json.loads(self.request.body.decode('utf-8'))
+    async def get(self):
+        virtual_memory = psutil.virtual_memory()
+        total_memory = virtual_memory.total  # 总内存
+        used_memory = virtual_memory.used  # 已用内存
+        memory_percent = virtual_memory.percent  # 内存使用率
 
-            c = f"{ data.get('name') }啥也不是"
 
-            if data["game"] == "无畏契约":
-
-                c = f"""{data["name"]}是瓦学弟"""
-
-            elif data["game"] == "csgo":
-
-                c = f"""{data["name"]}是go学长"""
-
-            self.write({"name":data["name"],"content":c})
-        except json.JSONDecodeError:
-            self.set_status(400)
-            self.write({"status": "error", "message": "Invalid JSON"})
-
+        self.write({"percent": memory_percent, "used_memory":int(used_memory/(1024**3)),'total_memory': int(total_memory / (1024 ** 3))} )
     @staticmethod
-    def get_description() ->str:
-        return "异步post测试接口"
+    def get_description()->str:
+        return "获取cpu占用情况"
+
+@app.add_route('/get_version_info')
+class HttpHandler(HttpDocsCORS):
+    """ HTTP 服务器端点 """
+    async def get(self):
+        version = (1,0,0)
+        version_str = f"{version[0]}.{version[1]}.{version[2]}"
+
+        source_code_address = "https://github.com/ikkksi/BWC-IoT"
+
+
+        self.write( {"version":version_str, "source_code_address":source_code_address} )
+    @staticmethod
+    def get_description()->str:
+        return "获取cpu占用情况"
+
+@app.add_route('/bro')
+class HttpHandler(HttpDocsCORS):
+    """ HTTP 服务器端点 """
+    async def get(self):
+        WebSocketHandler.broadcast("hello")
+        self.write("广播成功")
+    @staticmethod
+    def get_description()->str:
+        return "异步测试接口，广播测试接口"
+
 
 
 
@@ -136,6 +158,27 @@ class HttpHandler(HttpDocsCORS):
     @staticmethod
     def get_description()->str:
         return "获取在线设备"
+
+@app.add_route('/kick')
+class HttpHandler(HttpDocsCORS):
+    """ HTTP 服务器端点 """
+    async def post(self):
+        try:
+            data: dict = json.loads(self.request.body.decode('utf-8'))
+            name = data.get("name")
+            client: WebSocketHandler= WebSocketHandler.user_device_name_map.get(name)
+            client.close()
+            self.write({"result": f"踢出{name}成功"})
+        except Exception as e:
+            self.write({"result": f"踢出{name}成功"})
+            aloger.error(e)
+    @staticmethod
+    def get_description()->str:
+        return "异步测试接口，广播测试接口"
+
+
+
+
 
 app.add_route('/', WebSocketHandler)
 

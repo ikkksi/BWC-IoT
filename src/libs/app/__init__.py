@@ -1,5 +1,6 @@
 import json
 import asyncio
+from typing import Optional
 
 import tornado
 import tornado.websocket
@@ -183,6 +184,23 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler,IDocs):
         """ 处理 WebSocket 断开 """
         WebSocketHandler.connected_users.discard(self)
         aloger.error(Out.CONNECT_CLOSE.value)
+        self.close()
+
+    def close(self, code: Optional[int] = None, reason: Optional[str] = None) -> None:
+        temp_v,temp_k = None,None
+        for k,v in self.user_device_name_map.items():
+            if v == self:
+
+                temp_k = k
+                break
+
+        del self.user_device_name_map[temp_k]
+        self.connected_users.discard(self)
+        aloger.debug(f"{self.connected_users}")
+        aloger.info(f"{self.user_device_name_map}")
+        aloger.debug("ss")
+        super().close()
+
 
     @classmethod
     def broadcast(cls, message:str,sender:tornado.websocket.WebSocketHandler = None,sender_name:str = "server",type:str = "message"):

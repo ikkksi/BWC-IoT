@@ -7,20 +7,25 @@
     <style>
         @import url("webui/css/style.css");
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="http://127.0.0.1:2048/webui/js/marked.js"></script>
+
 </head>
 <body>
     <div class="sidebar">
         <ul>
-            <li onclick="changeContent(0)">在线设备</li>
-            <li onclick="changeContent(1)">广播测试</li>
-            <li onclick="changeContent(2)">接口测试</li>
-            <li onclick="changeContent(3)">日志查看</li>
-            <li onclick="changeContent(4)">关于我们</li>
+            <li onclick="changeContent(0)">基础信息</li>
+            <li onclick="changeContent(1)">在线设备</li>
+            <li onclick="changeContent(2)">广播测试</li>
+            <li onclick="changeContent(3)">接口测试</li>
+            <li onclick="changeContent(4)">日志查看</li>
+            <li onclick="changeContent(5)">关于我们</li>
         </ul>
     </div>
     <div class="content show" id="content">
-        <h1>在线设备</h1>
-        <p>欢迎来到我们的首页！</p>
+        <h1>欢迎使用BWC-IoT</h1>
+
+        <p></p>
     </div>
     <script type="text/javascript" src="webui/js/script.js">
 
