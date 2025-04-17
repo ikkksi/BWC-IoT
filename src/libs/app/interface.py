@@ -34,9 +34,23 @@ class BroadcastHandler(tornado.web.RequestHandler):
         self.finish()
 
 class IDocs:
-    @staticmethod
-    def get_description()->str:
+
+
+
+    @classmethod
+    def get_description(cls)->str:
         return "Default"
+
+    @classmethod
+    def get_docs(cls) -> dict:
+        return {
+            "description" : cls.get_description(),
+            "params" : {
+                "name":"XiaoMing",
+                "age":18
+            }
+        }
+
 
 class HttpDocsCORS(BroadcastHandler,IDocs):
     pass

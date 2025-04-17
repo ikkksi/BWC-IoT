@@ -2,12 +2,12 @@ import json
 import asyncio
 from typing import Optional
 
-import tornado
+
 import tornado.websocket
 
 
 import libs.config as config
-from libs.loger import aloger
+from libs.loger import aloger,IOut
 from libs.app.const import Out
 from libs.app.http_app import HttpApp
 from libs.app.interface import IWebsocketApp,IDocs
@@ -124,7 +124,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler,IDocs):
 
     def open(self):
         """ 处理 WebSocket 连接 """
-        aloger.debug(self.request.remote_ip)
+
         auth_key = self.request.headers.get("X-Auth-Key")
         device_name = self.request.headers.get("Device-Name")
         if device_name == None:
@@ -153,7 +153,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler,IDocs):
             "content": "right-key",
             "time": "2024-8-5-17-17",
         }))
-        aloger.info(f"{self.request.remote_ip} {Out.SUCCESS.value}")
+        aloger.info(f"{device_name}连接成功")
 
     def on_message(self, message):
         """ 处理客户端消息并广播 """
@@ -196,9 +196,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler,IDocs):
 
         del self.user_device_name_map[temp_k]
         self.connected_users.discard(self)
-        aloger.debug(f"{self.connected_users}")
-        aloger.info(f"{self.user_device_name_map}")
-        aloger.debug("ss")
+
         super().close()
 
 
@@ -211,6 +209,39 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler,IDocs):
                 data = {'sender': f'{sender_name}', 'type': f'{type}', 'content':message, 'time': '2024-8-5-17-17'}
                 user.write_message(json.dumps(data))
 
-    @staticmethod
-    def get_description() ->str:
+    @classmethod
+    def get_description(cls) ->str:
         return "websocket路由"
+
+
+
+
+class LogWebsocketHandler(tornado.websocket.WebSocketHandler):
+    connected_users = set()
+
+    def check_origin(self, origin):
+        """ 允许跨域 WebSocket 连接 """
+        return True
+
+    def open(self):
+        """ 客户端连接 WebSocket 时触发 """
+        self.connected_users.add(self)
+
+
+    def on_close(self):
+        """ 连接关闭时移除客户端 """
+        self.connected_users.discard(self)
+
+
+    @classmethod
+    def write_out(cls, content: str):
+        """ 发送日志消息给所有已连接的客户端 """
+        for user in list(cls.connected_users):  # 使用 list() 避免遍历过程中集合变化报错
+            try:
+                user.write_message(content)
+            except tornado.websocket.WebSocketClosedError:
+                cls.connected_users.discard(user)  # 移除已关闭的 WebSocket
+
+    @classmethod
+    def get_description(cls):
+        return "日志长连接"

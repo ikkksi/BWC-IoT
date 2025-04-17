@@ -11,3 +11,5 @@ LOG_LEVEL = 4  #0.None 1.info 2.warn 3.error
 
 
 lang = "cn"   # "cn" or "en"
+
+logProxy = "websocket"

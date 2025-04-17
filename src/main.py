@@ -3,15 +3,21 @@ import os
 
 
 import tornado
+
+
 from libs.loger import aloger
 
-from libs.app import WebSocketHandler, HttpApp
+from libs.app import WebSocketHandler, HttpApp,LogWebsocketHandler
+
+aloger.patch(LogWebsocketHandler)
+
 from libs import config
 from libs.app.interface import HttpDocsCORS
 
 
 import psutil
 
+aloger.patch(LogWebsocketHandler)
 EXT_TO_MIME = {
     ".js": "application/javascript",
     ".css": "text/css",
@@ -45,6 +51,9 @@ b = r"""
 """
 print(b)
 
+
+
+
 # 实例化 WebSocket 与 HTTP 服务
 app = HttpApp(port=config.WS_PORT)
 
@@ -60,8 +69,8 @@ class HttpHandler(HttpDocsCORS):
 
 
         self.write({"percent": cpu_percent, "cpu_count":cpu_count})
-    @staticmethod
-    def get_description()->str:
+    @classmethod
+    def get_description(cls)->str:
         return "获取cpu占用情况"
 
 @app.add_route('/get_memory_info')
@@ -75,9 +84,9 @@ class HttpHandler(HttpDocsCORS):
 
 
         self.write({"percent": memory_percent, "used_memory":int(used_memory/(1024**3)),'total_memory': int(total_memory / (1024 ** 3))} )
-    @staticmethod
-    def get_description()->str:
-        return "获取cpu占用情况"
+    @classmethod
+    def get_description(cls)->str:
+        return "获取内存占用情况"
 
 @app.add_route('/get_version_info')
 class HttpHandler(HttpDocsCORS):
@@ -90,9 +99,9 @@ class HttpHandler(HttpDocsCORS):
 
 
         self.write( {"version":version_str, "source_code_address":source_code_address} )
-    @staticmethod
-    def get_description()->str:
-        return "获取cpu占用情况"
+    @classmethod
+    def get_description(cls)->str:
+        return "获取版本信息"
 
 @app.add_route('/bro')
 class HttpHandler(HttpDocsCORS):
@@ -100,22 +109,23 @@ class HttpHandler(HttpDocsCORS):
     async def get(self):
         WebSocketHandler.broadcast("hello")
         self.write("广播成功")
-    @staticmethod
-    def get_description()->str:
+
+
+    async def post(self):
+        try:
+            data = json.loads(self.request.body.decode("utf-8"))
+            WebSocketHandler.broadcast(data)
+            self.write({"result": "success","reason":None})
+        except KeyError as e:
+            self.write({"result":"failed","reason":"wrong json"})
+    @classmethod
+    def get_description(cls)->str:
         return "异步测试接口，广播测试接口"
 
 
 
 
-@app.add_route('/bro')
-class HttpHandler(HttpDocsCORS):
-    """ HTTP 服务器端点 """
-    async def get(self):
-        WebSocketHandler.broadcast("hello")
-        self.write("广播成功")
-    @staticmethod
-    def get_description()->str:
-        return "异步测试接口，广播测试接口"
+
 
 @app.add_route('/index')
 class HttpHandler(HttpDocsCORS):
@@ -123,8 +133,8 @@ class HttpHandler(HttpDocsCORS):
     async def get(self):
 
         self.render("webui/html/index.html")
-    @staticmethod
-    def get_description()->str:
+    @classmethod
+    def get_description(cls)->str:
         return "主页路由"
 
 
@@ -139,12 +149,12 @@ class StaticHandler(HttpDocsCORS):
             content = f.read()
 
 
-        aloger.debug(ext.lower())
+
         self.set_header("Content-Type", EXT_TO_MIME.get(ext.lower(),"application/octet-stream"))
         self.write(content)
 
-    @staticmethod
-    def get_description() -> str:
+    @classmethod
+    def get_description(cls) -> str:
         return "静态资源"
 
 
@@ -155,32 +165,36 @@ class HttpHandler(HttpDocsCORS):
         onlines = [k for k,v in WebSocketHandler.user_device_name_map.items()]
 
         self.write({"list": onlines})
-    @staticmethod
-    def get_description()->str:
+    @classmethod
+    def get_description(cls)->str:
         return "获取在线设备"
 
 @app.add_route('/kick')
 class HttpHandler(HttpDocsCORS):
     """ HTTP 服务器端点 """
     async def post(self):
+        name = ""
         try:
             data: dict = json.loads(self.request.body.decode('utf-8'))
             name = data.get("name")
-            client: WebSocketHandler= WebSocketHandler.user_device_name_map.get(name)
+            client: WebSocketHandler = WebSocketHandler.user_device_name_map.get(name)
             client.close()
             self.write({"result": f"踢出{name}成功"})
         except Exception as e:
-            self.write({"result": f"踢出{name}成功"})
+            self.write({"result": f"踢出{name}失败"})
             aloger.error(e)
-    @staticmethod
-    def get_description()->str:
+    @classmethod
+    def get_description(cls)->str:
         return "异步测试接口，广播测试接口"
 
 
 
 
 
+
+
 app.add_route('/', WebSocketHandler)
+app.add_route("/ws/log",LogWebsocketHandler)
 
 if __name__ == "__main__":
 
