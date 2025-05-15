@@ -305,7 +305,19 @@ function logPage(content) {
 
                 logSocket.onmessage = function (event) {
                     const logData = event.data;
-                    logContainer.textContent += logData + "\n"; // 追加日志内容
+                    if (logData.includes("[ERROR]")){
+                        logContainer.innerHTML += `<span style="color: red;">${logData}</span><br>`;
+                    }
+                    else if(logData.includes("[INFO]")){
+                        logContainer.innerHTML += `<span style="color: greenyellow;">${logData}</span><br>`;
+                    }
+                    else if(logData.includes("[WARN]")){
+                        logContainer.innerHTML += `<span style="color: yellow;">${logData}</span><br>`;
+                    }
+                    else if(logData.includes("[DEBUG]")){
+                        logContainer.innerHTML += `<span style="color: gray;">${logData}</span><br>`;
+                    }
+
                     logContainer.scrollTop = logContainer.scrollHeight; // 滚动到底部
                 };
 

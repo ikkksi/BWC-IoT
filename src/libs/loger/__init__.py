@@ -35,7 +35,7 @@ class Loger(metaclass=SingletonMeta):
 
     def info(self,content:str):
         if self.Out is not None:
-            self.Out.write_out(content)
+            self.Out.write_out(f"[INFO]{content}")
         if self.level>=Level.INFO.value:
             filename,line,time=self._get_call_stack()
             print(f"[\033[40;36m{time}\033[0m] [\033[40;32mINFO\033[0m] \033[40;36;4m{filename}:{line}\033[0m | \033[40;32m{content}\033[0m")
@@ -43,21 +43,21 @@ class Loger(metaclass=SingletonMeta):
 
     def warn(self,content:str):
         if self.Out is not None:
-            self.Out.write_out(content)
+            self.Out.write_out(f"[WARN]{content}")
         if self.level>=Level.WARN.value:
             filename,line,time=self._get_call_stack()
             print(f"[\033[40;36m{time}\033[0m] [\033[40;33mWARNING\033[0m] \033[40;36;4m{filename}:{line}\033[0m | \033[40;33m{content}\033[0m")
 
     def error(self,content:str):
         if self.Out is not None:
-            self.Out.write_out(content)
+            self.Out.write_out(f"[ERROR]{content}")
         if self.level>=Level.ERROR.value:
             filename,line,time=self._get_call_stack()
             print(f"[\033[40;36m{time}\033[0m] [\033[40;31mERROR\033[0m] \033[40;36;4m{filename}:{line}\033[0m | \033[40;31m{content}\033[0m")
 
     def debug(self,content:str):
         if self.Out is not None:
-            self.Out.write_out(content)
+            self.Out.write_out(f"[DEBUG]{content}")
         if self.level>=Level.DEBUG.value:
             filename,line,time=self._get_call_stack()
             print(f"[\033[40;36m{time}\033[0m] [\033[40;37mDEBUG\033[0m] \033[40;36;4m{filename}:{line}\033[0m | \033[40;37m{content}\033[0m")
