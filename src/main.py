@@ -7,9 +7,11 @@ import tornado
 
 from libs.loger import aloger
 
-from libs.app import WebSocketHandler, HttpApp,LogWebsocketHandler
+from libs.app import LogWebsocketHandler
 
 aloger.patch(LogWebsocketHandler)
+
+from libs.app import WebSocketHandler, HttpApp
 
 from libs import config
 from libs.app.interface import HttpDocsCORS

@@ -262,17 +262,16 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function viewBroPage(content) {
-    const exampleString = `{
-    "pack": [
-        {
+    const exampleString = `
+{
             "action": "action_name",
             "param": {
                 "param1": "aaa",
                 "param2": "bbb"
             }
-        }
-    ]
-}`;
+}
+    
+`;
 
     content.innerHTML = `
         <h1>广播测试</h1>
