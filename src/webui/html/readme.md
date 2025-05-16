@@ -1,7 +1,7 @@
 <div align="center">
 <h1 style="font-size:10vw"><h1 style="font-size:5vw">BWC-IoT</h1><br></h1>
 <p align='center'>
-<img src='https://i.postimg.cc/QNPmws3g/00131-716747303-2.png' width='200' alt='logo' aling='middle'/>
+<img src='https://i.postimg.cc/YCW2jjGQ/20250404-153721.png' width='200' alt='logo' aling='middle'/>
 </p>
 
 <br />
@@ -14,40 +14,37 @@
 
 
 
----
-> **BWC-Cat** – A New Type of Centralized Data Communication Application
+## 描述
+**BWC-IoT** – [BW-Cat(分布式即时通信核心)]("https://github.com/Lixeer/Black-White-Cat")的一个物联网平台分支
+
+可以使用户进行嵌入式开发时，不必面向板端编码，烧录
 
 
-## 1 Introduction
-> **BWC-Cat** is a core centralized data communication system designed to provide a fully open-source, truly secure, and free communication platform. You can use this platform to set up your own chat room, game server, etc.
+## 扩展增加
+ 
+- 保持原有优点兼容原核心的通信协议，并扩展了MQTT，HTTP协议，配备了简单的WebUI
+- 提供更成熟，更规范的API以及SDK
+- 提供上位机软件
 
-- **Fully Open Source**: We firmly believe that transparency is the foundation of trust. All source code of Gray Cat is publicly available, and anyone can review the code and submit their ideas.
-- **Self-hosted Servers**: Gray Cat encourages users to set up their own servers according to their needs, which means you can have full control over the security and privacy of your data.
-- **High Freedom**: We offer a plugin system that allows you to customize features at will. The plugin system also helps decouple your modules to a high degree.
+## 友情链接
+**[BWC-Cat](https://github.com/Lixeer/Black-White-Cat)**
 
-## 2 Core Concepts
-### New-Type Centralized System
-> BWC-Cat uses an innovative centralized architecture.
+**[BWC-IoT-LiteLoader](https://github.com/ikkksi/BWC-IoT-Liteloader)**
 
-- **Encryption Key**: Each central server has a unique key. As long as you have this key, you can join the corresponding server.
+**[上位机软件](https://github.com/ikkksi/BWCli-host-computer)**
 
-- **Self-hosted Servers**: Users can set up their own servers based on personal or organizational needs. This not only ensures absolute communication security but also prevents third-party interference, while enabling more efficient decision-making.
+**[esp32透传固件]()**
 
-- **Compared to Traditional Systems**: Traditional centralized systems inevitably face high loads. We have shifted some of the computational tasks to special clients (bot clients).
+**[HT3252367-BM53a367a板载执行端固件]()**
 
-- **Higher Concurrency**: We use modern `asyncio` rather than preemptive multithreading, which avoids the impact of GIL, and it performs well in terms of performance and resource usage.
 
-#### Note:
-###### This is server-side software, not a client.
+## TODO
+- 使用更现代化方案(Vue等等)重构WebUI
+- 增加串行通信接口
+- 增加其他鉴权方式
+- 增加其他主流型号开发板支持(若使用Linux系统,可直接在开发板上运行Liteloader操作外设即可)      
+- 提供插件托管服务
+- 完成其他语言SDK
 
-## 3 Related Links
-[BWC-for-Android](https://github.com/gao-shuaibi/WBC_Android)
 
-[BWC-for-Windows](https://github.com/gao-shuaibi/WBC_Android)
 
-## 4 Sponsorship & Contact
-We hope you gain a better understanding of the core ideas and technical features of Gray Cat. If you are interested in our project, feel free to participate in the development process and help us build a more open and secure online communication environment.
-
-QQ Group: 885975144
-
-  
